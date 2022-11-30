@@ -8,6 +8,12 @@ association_table = db.Table(
     db.Column("mood_id", db.Integer, db.ForeignKey("mood.id"))
 )
 
+likes_table = db.Table(
+    "likes",
+    db.Column("user_id", db.Integer, db.ForeignKey("user.id")),
+    db.Column("song_id", db.Integer, db.ForeignKey("song.id"))
+)
+
 class Artist(db.Model):
     """
     Has a one to many relationship with Albums
@@ -57,13 +63,14 @@ class Album(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "songs": [song.serialize() for song in self.songs]
+            "songs": [song.simple_serialize() for song in self.songs]
         }
 
 class Song(db.Model):
     """
     Has a one to many relationship with comments
     Has a many to many relationship with moods
+    Has a many to many relationship with users
     """
     __tablename__="song"
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
@@ -72,7 +79,8 @@ class Song(db.Model):
     streams = db.Column(db.Integer, nullable = False)
     album_id = db.Column(db.Integer, db.ForeignKey("album.id"))
     comments = db.relationship("Comment", cascade="delete")
-    moods = db.relationship("Mood", secondary=association_table,back_populates="songs")
+    moods = db.relationship("Mood", secondary=association_table, back_populates="songs")
+    like = db.relationship("User", secondary=likes_table, back_populates="songs")
 
     def __init__(self, **kwargs):
         """
@@ -87,22 +95,44 @@ class Song(db.Model):
         """
         Serialize a song object
         """
-        pass
+        return {
+            "id": self.id,
+            "name": self.name,
+            "length": self.length,
+            "streams": self.streams,
+            "album_id": self.album_id,
+            "comments": [comment.serialize() for comment in self.comments],
+            "moods": [mood.simple_serialize() for mood in self.moods]
+        }
 
     def simple_serialize(self):
-        pass
+        return {
+            "id": self.id,
+            "name": self.name,
+            "length": self.length,
+            "streams": self.streams
+        }
 
 class Comment(db.Model):
-    pass
+    """
+    Comment Model
+    """
+    __tablename__="comment"
+    id = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    
 
 class Mood(db.Model):
-    pass
+    """
+    Mood Model
+    """
+    
 
 
 
 class User(db.Model):
     """
-    User model 
+    Has a one to many relationship with comments
+    Has a many to many relationship with songs
     """
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
