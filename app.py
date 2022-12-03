@@ -2,14 +2,7 @@ import json
 from flask import Flask
 from flask import request
 from db import db, Artist, Album, Song
-#from controller import """ """
 
-"""
-What we need:
-
-file.db
-controller.py
-"""
 app = Flask(__name__)
 db_filename = 'spotify.db'
 
