@@ -111,6 +111,28 @@ def editComment(song_id,comment_id):
     comment["text"] = text
     return json.dumps(comment), 200
 
+@app.route("/albums/<int:album_id>/")
+def get_album(album_id):
+    """
+    Endpoint for getting an album by ID
+    """
+    album = Album.query.filter_by(id=album_id).first()
+    if album is None:
+        return json.dumps({"error": "Album not found"}), 404
+    return json.dumps(album.serialize()), 200
+
+
+@app.route("/artist/<int:artist_id>/album/", methods=["Post"])
+def add_album(artist_id):
+    body = json.loads(request.data)
+    artist = Artist.query.filter_by(id=artist_id).first()
+    if artist is None:
+        return json.dumps({"error":"Artist not found!"})
+    new_album = Album(name = body.get("name"))
+    db.session.add(new_album)
+    db.session.commit()
+    return json.dumps(new_album.serialize()), 200
+
 # @app.route("/api/artists/<int:artist_id>/song/", methods=["POST"])
 # def create_assignment(artist_id):
 #     """
