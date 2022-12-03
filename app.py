@@ -45,15 +45,15 @@ def get_albums_by_artists(artist_id):
     return json.dumps({"id":artist.get("id"),"name":artist.get("name"),"album":artist.get("username")}), 200
 
 @app.route("/api/artists/<int:artist_id>/", methods=["DELETE"])
-def delete_user(artist_id):
+def delete_artist(artist_id):
     """
         delete an artist by id
     """
     artist = DB.get_artist_by_id(artist_id)
-    deleted_transactions = DB.get_transactions_for_user(artist_id)
+    deleted_artist = DB.get_(artist_id)
     if artist is None:
         return json.dumps({"error": "Artist not found"}), 404
-    DB.delete_user_by_id(artist_id)
+    DB.delete_artist_by_id(artist_id)
     return json.dumps({"id":artist.get("id"),"name":artist.get("name"),"username":artist.get("username")}), 200
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
