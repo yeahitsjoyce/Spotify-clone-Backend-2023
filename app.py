@@ -2,7 +2,7 @@ import json
 from flask import Flask
 from flask import request
 from db import db, Artist, Album, Song
-from controller import """ """
+#from controller import """ """
 
 """
 What we need:
@@ -25,73 +25,35 @@ with app.app_context():
 def start():
     return 'Spotify Clone'
 
-# @app.route("/tasks/")
-# def get_tasks():
-#     """
-#     Returns all tasks
-#     """
-#     res =  {"tasks": list(tasks.values())}
-#     return res
-#
-# @app.route("/posts/", methods = ["POST"])
-# def create_post():
-#     """
-#     Creates a new task
-#     """
-#     global post_id_counter
-#     body = json.loads(request.data)
-#     title = body.get("title")
-#     link = body.get("link")
-#     username = body.get("username")
-#
-#     post = {
-#         "id": task_id_counter,
-#         "upvotes": 1,
-#         "title": title,
-#         "link": link,
-#         "username": username
-#     }
-#
-#     posts[post_id_counter] = task
-#     post_id_counter +=1
-#     return json.dumps(post)
-#
-# @app.route("/posts/<int:post_id>/")
-# def get_post(post_id):
-#     """
-#     Gets posts by id
-#     """
-#     post = posts.get(post_id)
-#     if post is None:
-#         return json.dumps({"error": "Post not found!"}), 404
-#     return json.dumps(post), 200
-#
-# @app.route("/posts/<int:post_id>/", methods = ["DELETE"])
-# def delete_post(post_id):
-#     """
-#     deletes posts by id
-#     """
-#     post = posts.get(post_id)
-#     if post is None:
-#         return json.dumps({"error": "Post not found!"}), 404
-#     del posts[post_id]
-#     return json.dumps(post), 200
-#
-# app.route("/posts/<int:post_id>/comments", methods = ["POST"])
-# def update_Post(post_id):
-#     """
-#     Updates tasks by id
-#     """
-#     post = posts.get(post_id)
-#     if task is None:
-#         return json.dumps({"error": "Task not found!"}), 404
-#
-#     body = json.loads(request.data)
-#
-#     description = body.get("description")
-#     done = body.get("done")
-#     task["description"] = description
-#     task["done"] = done
-#     return json.dumps(task), 200
+@app.route("/api/artists/")
+def get_all_artists():
+    """
+    Returns all artists
+    """
+    artists = Artists.query.all()
+    res = {'success': True, 'data': {"artists": [artist.serialize() for artist in artists]}}
+    return json.dumps(res), 200
+
+@app.route('/api/artists/<int:artist_id>/')
+def get_albums_by_artists(artist_id):
+    """
+    gets artist by id
+    """
+    artist = DB.get_artist_by_id(artist_id)
+    if artist is None:
+        return json.dumps({"error": "Artist not found"}), 404
+    return json.dumps({"id":artist.get("id"),"name":artist.get("name"),"album":artist.get("username")}), 200
+
+@app.route("/api/artists/<int:artist_id>/", methods=["DELETE"])
+def delete_user(artist_id):
+    """
+        delete an artist by id
+    """
+    artist = DB.get_artist_by_id(artist_id)
+    deleted_transactions = DB.get_transactions_for_user(artist_id)
+    if artist is None:
+        return json.dumps({"error": "Artist not found"}), 404
+    DB.delete_user_by_id(artist_id)
+    return json.dumps({"id":artist.get("id"),"name":artist.get("name"),"username":artist.get("username")}), 200
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
