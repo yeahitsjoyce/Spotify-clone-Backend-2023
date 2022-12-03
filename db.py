@@ -2,14 +2,14 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-association_table = db.Table(
-    "association",
+mood_table = db.Table(
+    "mood",
     db.Column("song_id", db.Integer, db.ForeignKey("song.id")),
     db.Column("mood_id", db.Integer, db.ForeignKey("mood.id"))
 )
 
 likes_table = db.Table(
-    "likes",
+    "all_likes",
     db.Column("user_id", db.Integer, db.ForeignKey("user.id")),
     db.Column("song_id", db.Integer, db.ForeignKey("song.id"))
 )
@@ -79,8 +79,8 @@ class Song(db.Model):
     streams = db.Column(db.Integer, nullable = False)
     album_id = db.Column(db.Integer, db.ForeignKey("album.id"))
     comments = db.relationship("Comment", cascade="delete")
-    moods = db.relationship("Mood", secondary=association_table, back_populates="songs")
-    like = db.relationship("User", secondary=likes_table, back_populates="songs")
+    moods = db.relationship("Mood", secondary=mood_table, back_populates="songs")
+    liked = db.relationship("User", secondary=likes_table, back_populates="likes")
 
     def __init__(self, **kwargs):
         """
@@ -119,15 +119,57 @@ class Comment(db.Model):
     """
     __tablename__="comment"
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    user_comment = db.Column(db.Integer, nullable = False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable = False)
+    song_id = db.Column(db.Integer, db.ForeignKey("song.id"), nullable = False)
     
+    def __init__(self,**kwargs):
+        """
+        Creates a comment object
+        """
+        self.user_comment = kwargs.get("comment")
+        self.user_id = kwargs.get("user_id")
+        self.song_id = kwargs.get("song_id")
+
+    def serialize(self):
+        """
+        Serialize a comment object
+        """
+        return {
+            "id":self.id,
+            "user_comment": self.user_comment,
+            "user_id": self.user_id,
+            "song_id": self.song_id
+        }
+
 
 class Mood(db.Model):
     """
     Mood Model
     """
+    __tablename__="mood"
+    id = db.Column(db.Integer, primary_key = True, autoincrement = True)
+    description = db.Column(db.String, nullable = False)
+    color = db.Column(db.String, nullable=False)
+    song_mood = db.relationship("Song", secondary=mood_table, back_populates="moods")
     
+    def __init__(self, **kwargs):
+        """
+        Creates a mood object
+        """
+        self.description = kwargs.get("description","")
+        self.color = kwargs.get("color")
 
-
+    def serialize(self):
+        """
+        Serializes a mood object
+        """
+        return {
+            "id": self.id,
+            "description": self.description,
+            "color": self.color,
+            "song_mood": [song.serialize() for song in self.song_mood]
+        }
 
 class User(db.Model):
     """
@@ -137,4 +179,22 @@ class User(db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     name = db.Column(db.String, nullable = False)
+    comments = db.relationship("Comment", cascade="delete")
+    likes = db.relationship("Song", secondary=likes_table, back_populates="Liked")
+
+    def __init__(self, **kwargs):
+        """
+        Initializes a User Object
+        """
+        self.name = kwargs.get("name")
+
+    def serialize(self):
+        """
+        Serialize a User object
+        """
+        return {
+            "id":self.id,
+            "name":self.name,
+            "likes": [song.serialize() for song in self.likes]
+        }
 
