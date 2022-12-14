@@ -127,25 +127,5 @@ def add_album(artist_id):
     db.session.commit()
     return json.dumps(new_album.serialize()), 200
 
-# @app.route("/api/artists/<int:artist_id>/song/", methods=["POST"])
-# def create_assignment(artist_id):
-#     """
-#     Endpoint for creating a new assignment(song) for a course(artist) by id
-#     """
-#     song = Song.query.filter_by(id=song_id).first()
-#     if song is None:
-#         return failure_response("Song not found!")
-#     body = json.loads(request.data)
-#     if body.get("Name") is None or body.get("album_id") is None:
-#         return failure_response("Enter a title and due_date!",400)
-#     title = body.get("title")
-#     due_date = body.get("due_date")
-#     new_assignment = Assignment(title=title, due_date=due_date, song_id=song_id)
-#     db.session.add(new_assignment)
-#     course.assignments.append(new_assignment)
-#     db.session.commit()
-#     return success_response(new_assignment.serialize(), 201)
-#
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
